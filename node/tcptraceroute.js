@@ -105,14 +105,14 @@ async function trace(dstIp, dstPort, timeout, maxHops, resolveDomain) {
             icmpResponse = await PingServer.ping(dstIp, hop, 5000);
             icmpResponses.push(icmpResponse);
          
-            if (icmpResponse.address !== dstIp) {
+            if (!icmpResponse || icmpResponse.address !== dstIp) {
                 tcpResponses.push(await PingServer.ping(dstIp, hop, timeout, client, buffer));
             }
         }
 
         await showHopResult(hop, icmpResponses, tcpResponses, resolveDomain);
 
-        if (icmpResponse.address === dstIp) {
+        if (icmpResponse && icmpResponse.address === dstIp) {
             break;
         }
     }
@@ -126,7 +126,7 @@ if (args.length < 2) {
     console.log('Usage: node tcptraceroute.js host port');
 } else {
     try {
-        trace(args[0], parseInt(args[1]), 5000, 10, true)
+        trace(args[0], parseInt(args[1]), 5000, 30, true)
             .catch((error) => {
                 if (error.toString().includes('Operation not permitted')) {
                     console.log('Got root?');
